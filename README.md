@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Reticulum Web UI
 
 A web dashboard for the [Reticulum](https://reticulum.network) network stack.
