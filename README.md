@@ -28,12 +28,10 @@ git clone https://github.com/vooteleaer/reticulum-web.git
 cd reticulum-web
 2. Backend
 
->>>>>>> 8a558bdd99a1810eda0181daddd398d32a93c03f
 cd backend
 python -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-<<<<<<< HEAD
 uvicorn main:app --reload
 ```
 
@@ -99,7 +97,6 @@ The static output is in frontend/dist/. Serve it with any web server (nginx, cad
 Example nginx snippet:
 
 
->>>>>>> 8a558bdd99a1810eda0181daddd398d32a93c03f
 server {
     listen 80;
     root /path/to/reticulum-web/frontend/dist;
@@ -130,7 +127,6 @@ server {
 }
 Running as a service (systemd)
 
->>>>>>> 8a558bdd99a1810eda0181daddd398d32a93c03f
 # /etc/systemd/system/reticulum-web.service
 [Unit]
 Description=Reticulum Web UI
@@ -165,4 +161,3 @@ sudo systemctl enable --now reticulum-web
 =======
 
 sudo systemctl enable --now reticulum-web
->>>>>>> 8a558bdd99a1810eda0181daddd398d32a93c03f
