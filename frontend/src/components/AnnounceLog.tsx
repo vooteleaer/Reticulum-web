@@ -1,5 +1,4 @@
 import type { Announce } from '../api/types'
-import { formatHash } from '../utils/format'
 
 interface Props {
   announces: Announce[]
@@ -22,8 +21,13 @@ export default function AnnounceLog({ announces }: Props) {
             <span className="text-gray-600 shrink-0 w-20">
               {new Date(a.ts * 1000).toLocaleTimeString()}
             </span>
-            <span className="text-emerald-400 shrink-0 font-mono">{formatHash(a.hash)}</span>
-            <span className="text-gray-300 truncate">{a.app_data ?? '—'}</span>
+            <div className="flex flex-col gap-0.5 min-w-0">
+              <span className="text-emerald-400 font-mono break-all">{a.hash}</span>
+              {a.identity && (
+                <span className="text-gray-500 font-mono break-all">{a.identity}</span>
+              )}
+            </div>
+            <span className="text-gray-300 truncate shrink-0 max-w-[30%]">{a.app_data ?? '—'}</span>
           </div>
         ))}
     </div>
