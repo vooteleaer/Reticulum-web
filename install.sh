@@ -6,8 +6,9 @@ set -e
 #   git clone <repo> && cd <repo> && sudo bash install.sh
 
 INSTALL_DIR="$(cd "$(dirname "$0")" && pwd)"
-RNS_VERSION="1.1.3"
 RNS_USER="reticulum"
+# Default RNS version — auto-updated below if rnsd is already installed
+RNS_VERSION="1.1.3"
 RNS_HOME="/var/lib/$RNS_USER"
 
 echo "=== Reticulum Web UI installer ==="
@@ -73,6 +74,13 @@ if ! command -v rnsd >/dev/null 2>&1; then
 fi
 echo "    rnsd $(rnsd --version 2>&1 | head -1)"
 
+# Auto-detect installed rnsd version so the venv uses the same one
+DETECTED=$(python3 -c "import RNS; print(RNS.__version__)" 2>/dev/null || true)
+if [ -n "$DETECTED" ]; then
+    RNS_VERSION="$DETECTED"
+    echo "    detected RNS version $RNS_VERSION — pinning venv to match"
+fi
+
 # ── RNS config ────────────────────────────────────────────────────────────────
 RNS_CONFIG_DIR="$RNS_HOME/.reticulum"
 RNS_CONFIG="$RNS_CONFIG_DIR/config"
@@ -122,6 +130,8 @@ Environment=HOME=$RNS_HOME
 ExecStart=$RNSD_BIN
 Restart=always
 RestartSec=5
+StandardOutput=journal
+StandardError=journal
 
 [Install]
 WantedBy=multi-user.target
