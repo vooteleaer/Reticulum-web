@@ -1,31 +1,17 @@
-import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { api } from '../api/client'
+import { useEffect, useState } from 'react'
 import type { Announce } from '../api/types'
-import { useWebSocket } from '../hooks/useWebSocket'
+import { getAnnounces, subscribe } from '../store/announces'
 import AnnounceLog from '../components/AnnounceLog'
 
 export default function Announces() {
+  const [announces, setLocal] = useState<Announce[]>(getAnnounces)
   const [paused, setPaused] = useState(false)
   const [filter, setFilter] = useState('')
-  const [announces, setAnnounces] = useState<Announce[]>([])
 
-  // Load initial history
-  useQuery({
-    queryKey: ['announces'],
-    queryFn: () => api.announces(200),
-    onSuccess: (data: Announce[]) => setAnnounces(data),
-  } as Parameters<typeof useQuery>[0])
-
-  const wsConnected = useWebSocket((msg) => {
-    if (msg.type === 'announce' && !paused) {
-      setAnnounces((prev) => {
-        const entry = msg.data as Announce
-        const next = [...prev, entry]
-        return next.slice(-500)
-      })
-    }
-  })
+  useEffect(() => {
+    if (paused) return
+    return subscribe(setLocal)
+  }, [paused])
 
   const filtered = filter
     ? announces.filter(
@@ -41,10 +27,6 @@ export default function Announces() {
         <h1 className="text-sm font-semibold uppercase tracking-widest text-gray-400">
           Announce Monitor
         </h1>
-        <div
-          className={`w-2 h-2 rounded-full ${wsConnected ? 'bg-emerald-400' : 'bg-yellow-500'}`}
-          title={wsConnected ? 'Live' : 'Reconnecting'}
-        />
         <span className="text-xs text-gray-600">
           {announces.length} received
         </span>
