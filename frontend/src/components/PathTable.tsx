@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import type { PathEntry } from '../api/types'
-import { formatHash } from '../utils/format'
 
 interface Props {
   paths: PathEntry[]
@@ -75,7 +74,7 @@ export default function PathTable({ paths }: Props) {
                 key={p.hash}
                 className="border-b border-gray-900 hover:bg-gray-800/40 transition-colors"
               >
-                <td className="py-1.5 pr-4 text-gray-300">{formatHash(p.hash)}</td>
+                <td className="py-1.5 pr-4 font-mono text-gray-300 break-all">{p.hash}</td>
                 <td className="py-1.5 pr-4">
                   <span
                     className={`px-1.5 py-0.5 rounded text-[10px] ${
@@ -87,7 +86,7 @@ export default function PathTable({ paths }: Props) {
                     {p.hops}
                   </span>
                 </td>
-                <td className="py-1.5 pr-4 text-gray-500">{p.via ? formatHash(p.via) : '—'}</td>
+                <td className="py-1.5 pr-4 font-mono text-gray-500 break-all">{p.via ?? '—'}</td>
                 <td className="py-1.5 pr-4 text-gray-400">{p.interface ?? '—'}</td>
                 <td className="py-1.5 text-gray-500">
                   {p.expires ? new Date(p.expires * 1000).toLocaleTimeString() : '—'}
