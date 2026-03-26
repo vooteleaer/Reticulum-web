@@ -1,8 +1,11 @@
 import asyncio
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 import rns_service
 from routers import announces, config, interfaces, network, nodes
@@ -34,3 +37,11 @@ app.include_router(interfaces.router)
 app.include_router(announces.router)
 app.include_router(config.router)
 app.include_router(nodes.router)
+
+_dist = os.path.join(os.path.dirname(__file__), "../frontend/dist")
+if os.path.isdir(_dist):
+    app.mount("/assets", StaticFiles(directory=os.path.join(_dist, "assets")), name="assets")
+
+    @app.get("/{full_path:path}")
+    async def serve_frontend(full_path: str):
+        return FileResponse(os.path.join(_dist, "index.html"))

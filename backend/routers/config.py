@@ -74,14 +74,15 @@ def restart():
     def _do_restart() -> None:
         import time
         time.sleep(0.8)  # allow the HTTP response to be sent first
-        # Use -m uvicorn instead of sys.argv[0] — on Windows the console script
-        # wrapper (Scripts\uvicorn) is not a plain .py file Python can exec directly.
-        cmd = [sys.executable, "-m", "uvicorn"] + sys.argv[1:]
         if os.name == "nt":
+            # Windows: spawn a new process since there's no service manager
+            cmd = [sys.executable, "-m", "uvicorn"] + sys.argv[1:]
             subprocess.Popen(cmd, cwd=os.getcwd(),
                              creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
         else:
-            subprocess.Popen(cmd, cwd=os.getcwd())
+            # Restart rnsd first, then let systemd restart us
+            subprocess.run(["systemctl", "restart", "rnsd"], timeout=15)
+            time.sleep(2)  # wait for rnsd to come up before we exit
         os._exit(0)
 
     threading.Thread(target=_do_restart, daemon=True).start()

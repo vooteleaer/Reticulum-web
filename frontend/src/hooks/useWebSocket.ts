@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { wsUrl } from '../api/client'
 
 export type WsMessage = {
-  type: 'stats' | 'announce'
+  type: 'stats' | 'announce' | 'node_update'
   data: unknown
 }
 
