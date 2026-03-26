@@ -1,163 +1,64 @@
 # Reticulum Web UI
 
-A web dashboard for the [Reticulum](https://reticulum.network) network stack.
+A web dashboard for the [Reticulum](https://reticulum.network) network stack. Monitor interfaces, paths, announces and edit config — all from a browser.
 
-- **Backend:** Python + FastAPI
+- **Backend:** Python + FastAPI (serves the frontend too)
 - **Frontend:** React + TypeScript + Vite + Tailwind CSS
 
-## Prerequisites
-
-- Python 3.10+
-- Node.js 18+
-- A running Reticulum daemon (`rnsd`)
-
-## Quick Start
-
-### Backend
+## Install (Debian / Raspberry Pi OS)
 
 ```bash
-=======
-Deployment
-Prerequisites
-Python 3.10+
-Node.js 18+
-A running Reticulum daemon (rnsd)
-1. Clone the repository
+git clone https://github.com/vooteleaer/Reticulum-web.git
+cd Reticulum-web
+sudo bash install.sh
+```
 
-git clone https://github.com/vooteleaer/reticulum-web.git
-cd reticulum-web
-2. Backend
+The script will ask for:
+- **Instance name** — shown in the Reticulum network (default: hostname)
+- **Web UI port** — default 8080
 
+It will then:
+- Install `rnsd` if not present
+- Create a dedicated `reticulum` system user
+- Write a Reticulum config with your chosen instance name
+- Build the frontend and set up both `rnsd` and `reticulum-web` as systemd services that start on boot
+
+The UI will be available at `http://<device-ip>:8080`.
+
+## Development
+
+Requirements: Python 3.10+, Node.js 18+, a running `rnsd`
+
+```bash
+# Backend
 cd backend
 python -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
+source .venv/bin/activate
 pip install -r requirements.txt
 uvicorn main:app --reload
-```
 
-The API will be available at `http://localhost:8000`.
-
-> The backend connects to a running `rnsd` instance via its multiprocessing RPC socket (port 37428). Make sure `rnsd` is running before starting the backend.
-
-### Frontend (development)
-
-```bash
+# Frontend (separate terminal)
 cd frontend
 npm install
 npm run dev
 ```
 
-The dev server starts at `http://localhost:5173` and proxies `/api` requests to the backend automatically.
+Frontend dev server starts at `http://localhost:5173` and proxies `/api` to the backend automatically.
 
-## Production Deployment
-
-### 1. Build the frontend
-
-```bash
-cd frontend
-npm install
-npm run build
-```
-
-Static output is in `frontend/dist/`.
-
-### 2. Run the backend
-
-```bash
-cd backend
-source .venv/bin/activate
-uvicorn main:app --host 127.0.0.1 --port 8000
-```
-
-### 3. Serve with nginx
-
-Serve the built frontend and proxy API/WebSocket requests to the backend:
-
-```nginx
-=======
-uvicorn main:app --host 0.0.0.0 --port 8000
-The API will be available at http://localhost:8000.
-
-Note: The backend connects to a running rnsd instance via its multiprocessing RPC socket (port 37428). Make sure rnsd is running before starting the backend.
-
-3. Frontend (development)
-
-cd frontend
-npm install
-npm run dev
-The dev server starts at http://localhost:5173 and proxies /api requests to the backend.
-
-4. Frontend (production build)
-
-cd frontend
-npm install
-npm run build
-The static output is in frontend/dist/. Serve it with any web server (nginx, caddy, etc.) and proxy /api to the FastAPI backend.
-
-Example nginx snippet:
-
-
-server {
-    listen 80;
-    root /path/to/reticulum-web/frontend/dist;
-    index index.html;
-
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-
-    location /api/ {
-        proxy_pass http://127.0.0.1:8000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-<<<<<<< HEAD
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-    }
-}
-```
-
-### 4. Run as a systemd service (optional)
-
-```ini
-=======
-        proxy_set_header Connection "upgrade";  # required for WebSocket
-        proxy_set_header Host $host;
-    }
-}
-Running as a service (systemd)
-
-# /etc/systemd/system/reticulum-web.service
-[Unit]
-Description=Reticulum Web UI
-After=network.target
-
-[Service]
-User=<your-user>
-WorkingDirectory=/path/to/reticulum-web/backend
-ExecStart=/path/to/reticulum-web/backend/.venv/bin/uvicorn main:app --host 127.0.0.1 --port 8000
-Restart=on-failure
-
-[Install]
-WantedBy=multi-user.target
-<<<<<<< HEAD
-```
-
-```bash
-sudo systemctl enable --now reticulum-web
-```
-
-## API Endpoints
+## API
 
 | Method | Path | Description |
 |--------|------|-------------|
 | GET | `/api/v1/status` | Transport summary |
 | GET | `/api/v1/interfaces` | Interface list with stats |
 | GET | `/api/v1/paths?max_hops=N` | Path/routing table |
-| GET | `/api/v1/announces?limit=N` | Announce log (last N) |
+| GET | `/api/v1/announces?limit=N` | Announce log |
 | WS  | `/api/v1/ws` | Live stats and announce events |
 | GET | `/api/v1/config` | Parsed Reticulum config |
-| PUT | `/api/v1/config` | Write a config value |
-=======
+| PUT | `/api/v1/config/general/{section}` | Update a config section |
+| POST | `/api/v1/restart` | Restart rnsd + backend |
 
-sudo systemctl enable --now reticulum-web
+## Notes
+
+- The backend connects to `rnsd` via the RNS shared instance socket. Both must run as the same user so the RPC auth key matches — `install.sh` handles this automatically.
+- Restarting from the UI restarts both `rnsd` and the backend so config changes (e.g. instance name) take effect immediately.
