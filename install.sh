@@ -30,7 +30,6 @@ read -rp "Web UI port   [$DEFAULT_PORT]: " PORT
 PORT="${PORT:-$DEFAULT_PORT}"
 
 echo
-echo "Install dir : $INSTALL_DIR"
 echo "Instance    : $INSTANCE_NAME"
 echo "Port        : $PORT"
 echo "Service user: $RNS_USER"
