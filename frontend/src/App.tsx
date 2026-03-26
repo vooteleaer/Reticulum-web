@@ -29,12 +29,15 @@ function NavItem({ to, label }: { to: string; label: string }) {
 
 function GlobalListeners() {
   // Load initial history once
-  useQuery({
+  const { data: initialAnnounces } = useQuery({
     queryKey: ['announces-init'],
     queryFn: () => api.announces(500),
-    onSuccess: (data: Announce[]) => setAnnounces(data),
     staleTime: Infinity,
-  } as Parameters<typeof useQuery>[0])
+  })
+
+  useEffect(() => {
+    if (initialAnnounces) setAnnounces(initialAnnounces)
+  }, [initialAnnounces])
 
   // Keep WebSocket open always
   useWebSocket((msg) => {

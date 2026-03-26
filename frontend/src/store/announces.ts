@@ -1,5 +1,6 @@
 /**
  * Module-level announce store — persists across component mounts/unmounts.
+ * Also exposes a hash→announce lookup map for type-based coloring.
  */
 import type { Announce } from '../api/types'
 
@@ -23,4 +24,11 @@ export function addAnnounce(entry: Announce): void {
 export function subscribe(fn: (a: Announce[]) => void): () => void {
   _listeners.add(fn)
   return () => _listeners.delete(fn)
+}
+
+/** Lookup map: destination hash → most recent announce for that hash. */
+export function getAnnounceMap(): Map<string, Announce> {
+  const map = new Map<string, Announce>()
+  for (const a of _announces) map.set(a.hash, a)
+  return map
 }
